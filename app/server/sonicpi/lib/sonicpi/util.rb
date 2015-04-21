@@ -176,6 +176,14 @@ module SonicPi
       File.open("#{log_path}/debug.log", 'a') {|f| f.write("[#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}] #{s}")}
     end
 
+    def log_notes(s, truncate=false)
+        # TODO: consider moving this into a worker thread to reduce file
+        # io overhead:
+      File.open("#{log_path}/notes.log", (truncate ? 'w' : 'a')) {|f| 
+        f.write(s)
+      }
+    end
+
     def log_exception(e, context="")
       if debug_mode
         res = "Exception => #{context} #{e.message}"

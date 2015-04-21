@@ -585,12 +585,14 @@ module SonicPi
           Thread.current.thread_variable_set :sonic_pi_spider_start_time, now
           @run_start_time = now if num_running_jobs == 1
           __info "Starting run #{id}"
+          log_notes "START #{Thread.current.thread_variable_get(:sonic_pi_spider_time).to_f}\n", true
           code = PreParser.preparse(code)
           eval(code, nil, info[:workspace] || 'eval', firstline)
           __schedule_delayed_blocks_and_messages!
         rescue Stop => e
           __no_kill_block do
             __info("Stopping Run #{id}")
+            log_notes "END #{Thread.current.thread_variable_get(:sonic_pi_spider_time).to_f}\n"
           end
         rescue Exception => e
           __no_kill_block do
@@ -621,6 +623,7 @@ module SonicPi
         @user_jobs.job_completed(id)
         Kernel.sleep @mod_sound_studio.sched_ahead_time
         __info "Completed run #{id}"
+        log_notes "END #{Thread.current.thread_variable_get(:sonic_pi_spider_time).to_f}\n"
         @msg_queue.push({type: :job, jobid: id, action: :completed, jobinfo: info})
       end
     end

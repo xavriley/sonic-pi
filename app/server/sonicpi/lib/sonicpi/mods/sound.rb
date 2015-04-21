@@ -758,6 +758,7 @@ synth :dsaw, note: 50 # Play note 50 of the :dsaw synth with a release of 5"]
          if n.nil?
            unless Thread.current.thread_variable_get(:sonic_pi_mod_sound_synth_silent)
              __delayed_message "synth #{synth_name.to_sym.inspect}, {note: :rest}"
+             log_notes "NOTE #{Thread.current.thread_variable_get(:sonic_pi_spider_time).to_f} #{synth_name.to_sym.inspect}, {note: rest}\n"
            end
 
            return nil
@@ -2537,6 +2538,7 @@ If you wish your synth to work with Sonic Pi's automatic stereo sound infrastruc
            __delayed_message "synth #{sn.inspect}, #{arg_h_pp(args_h)}"
          end
 
+         log_notes "NOTE #{Thread.current.thread_variable_get(:sonic_pi_spider_time).to_f} #{sn.inspect}, #{arg_h_pp(args_h)}\n"
          trigger_synth(synth_name, args_h, group, info, false, nil, true)
        end
 
