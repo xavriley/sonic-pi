@@ -11,9 +11,18 @@
 ;; notice is included.
 ;;++
 
+(in-ns 'sonic-pi.synths.fx)
 (ns sonic-pi.synths.fx
   (:use [overtone.live])
   (:require [sonic-pi.synths.core :as core]))
+
+(defn save-synthdef [sdef folder]
+  (let [path (str folder "/" (last (clojure.string/split (-> sdef :sdef :name) #"/")) ".scsyndef") ]
+    (overtone.sc.machinery.synthdef/synthdef-write (:sdef sdef) path)
+    path))
+
+(defn save-to-pi [sdef]
+  (save-synthdef sdef "/Users/xavierriley/Projects/sonic-pi/etc/synthdefs/compiled"))
 
 
 (without-namespace-in-synthdef
@@ -911,6 +920,77 @@
          fin-r         (x-fade2 in-r new-r (- (* mix 2) 1) amp)]
      (out out_bus [fin-l fin-r])))
 
+(do
+  (without-namespace-in-synthdef
+    (defsynth sonic-pi-fx_vowel
+      [amp 1
+       amp_slide 0
+       amp_slide_shape 5
+       amp_slide_curve 0
+       mix 1
+       mix_slide 0
+       mix_slide_shape 5
+       mix_slide_curve 0
+       pre_amp 1
+       pre_amp_slide 0
+       pre_amp_slide_shape 5
+       pre_amp_slide_curve 0
+       vowel_sound 0
+       in_bus 0
+       out_bus 0]
+      (let [amp           (varlag amp amp_slide amp_slide_curve amp_slide_shape)
+            mix           (varlag mix mix_slide mix_slide_curve mix_slide_shape)
+            pre_amp       (varlag pre_amp pre_amp_slide pre_amp_slide_curve pre_amp_slide_shape)
+
+            ;; values for soprano voice
+            ;; taken from http://www.csounds.com/manual/html/MiscFormants.html
+            formant-freqs-a [800 1150 2900 3900 4950]
+            formant-freqs-e [350 2000 2800 3600 4950]
+            formant-freqs-i [270 2140 2950 3900 4950]
+            formant-freqs-o [450 800  2830 3800 4950]
+            formant-freqs-u [325 700  2700 3800 4950]
+
+            formant-amps-a  (map db->amp [0 -6 -32 -20 -50])
+            formant-amps-e  (map db->amp [0 -20 -15 -40 -56])
+            formant-amps-i  (map db->amp [0 -12 -26 -26 -44])
+            formant-amps-o  (map db->amp [0 -11 -22 -22 -50])
+            formant-amps-u  (map db->amp [0 -16 -35 -40 -60])
+
+            formant-bws-a   [80  90  120 130 140]
+            formant-bws-e   [60  100 120 150 200]
+            formant-bws-i   [60  90  100 120 120]
+            formant-bws-o   [40  80  100 120 120]
+            formant-bws-u   [50  60  170 180 200]
+
+            all-formants    [[formant-freqs-a formant-bws-a formant-amps-a]
+                             [formant-freqs-e formant-bws-e formant-amps-e]
+                             [formant-freqs-i formant-bws-i formant-amps-i]
+                             [formant-freqs-o formant-bws-o formant-amps-o]
+                             [formant-freqs-u formant-bws-u formant-amps-u]]
+
+            [in-l in-r]   (* pre_amp (in in_bus 2))
+
+            [formant-filters-l formant-filters-r] (map (fn [in]
+                                                         (map
+                                                           (fn [[freqs bws amps]]
+                                                             (map
+                                                               (fn [freq bw amp]
+                                                                 (mul-add (bpf :in in
+                                                                               :freq freq
+                                                                               :rq (/ bw freq))
+                                                                          (* amp 10)
+                                                                          0))
+                                                               freqs bws amps))
+                                                           all-formants))
+                                                       [in-l in-r])
+
+            [new-l new-r] (normalizer [(select:ar vowel_sound formant-filters-l)
+                                       (select:ar vowel_sound formant-filters-r)])
+
+            fin-l         (x-fade2 in-l new-l (- (* mix 2) 1) amp)
+            fin-r         (x-fade2 in-r new-r (- (* mix 2) 1) amp)]
+        (out out_bus [fin-l fin-r]))))
+(save-to-pi sonic-pi-fx_vowel))
 
  (defsynth sonic-pi-fx_bpf
    [amp 1
@@ -1231,31 +1311,31 @@
  ;;(kill sonic-pi-fx_rbpf)
 
  (comment
-   (core/save-synthdef sonic-pi-fx_krush)
-   (core/save-synthdef sonic-pi-fx_bitcrusher)
-   (core/save-synthdef sonic-pi-fx_reverb)
-   (core/save-synthdef sonic-pi-fx_level)
-   (core/save-synthdef sonic-pi-fx_echo)
-   (core/save-synthdef sonic-pi-fx_slicer)
-   (core/save-synthdef sonic-pi-fx_wobble)
-   (core/save-synthdef sonic-pi-fx_ixi_techno)
-   (core/save-synthdef sonic-pi-fx_compressor)
-   (core/save-synthdef sonic-pi-fx_rlpf)
-   (core/save-synthdef sonic-pi-fx_nrlpf)
-   (core/save-synthdef sonic-pi-fx_rhpf)
-   (core/save-synthdef sonic-pi-fx_nrhpf)
-   (core/save-synthdef sonic-pi-fx_hpf)
-   (core/save-synthdef sonic-pi-fx_nhpf)
-   (core/save-synthdef sonic-pi-fx_lpf)
-   (core/save-synthdef sonic-pi-fx_nlpf)
-   (core/save-synthdef sonic-pi-fx_normaliser)
-   (core/save-synthdef sonic-pi-fx_distortion)
-   (core/save-synthdef sonic-pi-fx_pan)
-   (core/save-synthdef sonic-pi-fx_bpf)
-   (core/save-synthdef sonic-pi-fx_rbpf)
-   (core/save-synthdef sonic-pi-fx_nrbpf)
-   (core/save-synthdef sonic-pi-fx_pitch_shift)
-   (core/save-synthdef sonic-pi-fx_ring_mod)
-   (core/save-synthdef sonic-pi-fx_octaver)
-   (core/save-synthdef sonic-pi-fx_flanger)
+   (save-synthdef sonic-pi-fx_krush)
+   (save-synthdef sonic-pi-fx_bitcrusher)
+   (save-synthdef sonic-pi-fx_reverb)
+   (save-synthdef sonic-pi-fx_level)
+   (save-synthdef sonic-pi-fx_echo)
+   (save-synthdef sonic-pi-fx_slicer)
+   (save-synthdef sonic-pi-fx_wobble)
+   (save-synthdef sonic-pi-fx_ixi_techno)
+   (save-synthdef sonic-pi-fx_compressor)
+   (save-synthdef sonic-pi-fx_rlpf)
+   (save-synthdef sonic-pi-fx_nrlpf)
+   (save-synthdef sonic-pi-fx_rhpf)
+   (save-synthdef sonic-pi-fx_nrhpf)
+   (save-synthdef sonic-pi-fx_hpf)
+   (save-synthdef sonic-pi-fx_nhpf)
+   (save-synthdef sonic-pi-fx_lpf)
+   (save-synthdef sonic-pi-fx_nlpf)
+   (save-synthdef sonic-pi-fx_normaliser)
+   (save-synthdef sonic-pi-fx_distortion)
+   (save-synthdef sonic-pi-fx_pan)
+   (save-synthdef sonic-pi-fx_bpf)
+   (save-synthdef sonic-pi-fx_rbpf)
+   (save-synthdef sonic-pi-fx_nrbpf)
+   (save-synthdef sonic-pi-fx_pitch_shift)
+   (save-synthdef sonic-pi-fx_ring_mod)
+   (save-synthdef sonic-pi-fx_octaver)
+   (save-synthdef sonic-pi-fx_flanger)
    ))

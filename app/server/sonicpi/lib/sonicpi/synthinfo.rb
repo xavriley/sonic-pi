@@ -3571,6 +3571,54 @@ The way the transpositions are done adds some distortion, particulary to the low
     end
   end
 
+  class FXVowel < FXInfo
+    def name
+      "Vowel Filter"
+    end
+
+    def introduced
+      Version.new(2,6,0)
+    end
+
+    def synth_name
+      "fx_vowel"
+    end
+
+    def arg_defaults
+      {
+        :amp => 1,
+        :amp_slide => 0,
+        :amp_slide_shape => 5,
+        :amp_slide_curve => 0,
+        :mix => 1,
+        :mix_slide => 0,
+        :mix_slide_shape => 5,
+        :mix_slide_curve => 0,
+        :pre_amp => 1,
+        :pre_amp_slide => 0,
+        :pre_amp_slide_shape => 5,
+        :pre_amp_slide_curve => 0,
+        :vowel_sound => 0
+      }
+    end
+
+    def specific_arg_info
+      {
+        :vowel_sound =>
+        {
+          :doc => "A,e,i,o or u",
+          :validations => [v_one_of(:vowel_sound, [0, 1, 2, 3, 4])],
+          :modulatable => true
+        },
+
+      }
+    end
+
+    def doc
+      "Filter the input to mimic the sound of a soprano voice singing vowels"
+    end
+  end
+
   class FXBPF < FXInfo
     def name
       "Band Pass Filter"
@@ -4556,6 +4604,7 @@ The window_size is the length of the slices and is measured in seconds. It needs
       :fx_replace_distortion => FXDistortion.new,
       :fx_pan => FXPan.new,
       :fx_replace_pan => FXPan.new,
+      :fx_vowel => FXVowel.new,
       :fx_bpf => FXBPF.new,
       :fx_nbpf => FXNBPF.new,
       :fx_rbpf => FXRBPF.new,
