@@ -367,6 +367,85 @@ play 80  #=> this plays as the stop only affected the above thread"
 
 
 
+    def arpeggiator(root, options={})
+      options[:num_octaves] ||= 1
+      options[:direction] ||= :up
+      options[:grouping] ||= 0
+
+      options[:chord] ||= :major
+      options[:scale] ||= nil
+      options[:notes] ||= nil
+
+      if options[:notes]
+        notes_in_octave = Array(options[:notes]).map {|x|
+          note(note_info(x).pitch_class.to_s + note_info(root).octave.to_s)
+        }.ring
+
+        note_pool = options[:num_octaves].times.flat_map do |n|
+          notes_in_octave.map {|x| x + (n * 12) }
+        end
+      elsif options[:scale]
+        note_pool = scale(root, options[:scale], num_octaves: options[:num_octaves])
+      else
+        note_pool = options[:num_octaves].times.flat_map do |n|
+          chord(root, options[:chord]).map {|x| x + (n * 12) }
+        end
+      end
+
+      # safety net
+      note_pool = Array(root) if note_pool.empty?
+
+      # Make array for following transformations
+      note_pool = note_pool.to_a
+
+      note_pool = case options[:direction]
+                  when :up
+                    note_pool.sort
+                  when :down
+                    # TODO make sure it starts on root
+                    note_pool.sort.reverse
+                  when :updown
+                    # TODO no repeats
+                    note_pool.sort + note_pool.sort.reverse[1..-1]
+                  when :downup
+                    # TODO no repeats
+                    note_pool.sort.reverse + note_pool.sort[1..-1]
+                  when :random
+                    note_pool.shuffle
+                  when :from_notes
+                    note_pool
+                  end
+
+      note_pool = if options[:grouping] != 0
+                    # TODO stop this crashing if grouping > note_pool.length
+                    note_pool.each_cons(options[:grouping]).to_a.flatten
+                  else
+                    note_pool
+                  end
+
+      (ring *note_pool)
+    end
+    doc name:           :arpeggiator,
+        introduced:     Version.new(2,6,0),
+        summary:        "Make a ring of notes that form an arpeggio or pattern",
+        args:           [[:root, :anything]],
+        returns:        :ring,
+        opts:           {:num_octaves      => "",
+                         :direction => "",
+                         :grouping => "",
+                         :chord => "",
+                         :scale => "",
+                         :notes => ""},
+        accepts_block:  false,
+        doc:            "",
+        examples:       [
+      "",
+      ""
+    ]
+
+
+
+
     def spread(num_accents, size, *args)
       args_h = resolve_synth_opts_hash_or_array(args)
       beat_rotations = args_h[:rotate]
