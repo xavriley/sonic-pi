@@ -58,5 +58,29 @@ module SonicPi
       assert_equal(13.2, quantise(13.3212, 0.3))
       assert_equal(13.5, quantise(13.3212, 0.5))
     end
+
+    def test_arpeggiator
+      assert_equal(ring(60, 64, 67, 72), arpeggiator(:c4))
+      assert_equal(ring(72, 67, 64, 60), arpeggiator(:c4, direction: :down))
+
+      # updown and downup should loop nicely - not repeat ending notes
+      assert_equal(ring(60, 64, 67, 72, 67, 64), arpeggiator(:c4, direction: :updown))
+      assert_equal(ring(72, 67, 64, 60, 64, 67), arpeggiator(:c4, direction: :downup))
+
+      # num_octaves
+      assert_equal(ring(60, 64, 67, 72, 76, 79, 84), arpeggiator(:c4, num_octaves: 2))
+
+      # scale
+      assert_equal(ring(60, 62, 64, 67, 69, 72, 74, 76, 79, 81, 84), arpeggiator(:c4, scale: :major_pentatonic, num_octaves: 2))
+
+      # custom notes
+      assert_equal(ring(62, 64, 67, 69, 74, 76, 79, 81), arpeggiator(:c4, notes: [:d, :e, :g, :a], num_octaves: 2))
+      # - ignore ordering
+      assert_equal(ring(62, 64, 67, 69, 74, 76, 79, 81), arpeggiator(:c4, notes: [:d, :g, :e, :a], num_octaves: 2))
+      # - ignore octave info
+      assert_equal(ring(62, 64, 67, 69, 74, 76, 79, 81), arpeggiator(:c4, notes: [:d5, :e7, :g3, :a1], num_octaves: 2))
+      # - accept midi numbers
+      assert_equal(ring(62, 64, 67, 69, 74, 76, 79, 81), arpeggiator(:c4, notes: [62, 64, 67, 69], num_octaves: 2))
+    end
   end
 end

@@ -376,20 +376,32 @@ play 80  #=> this plays as the stop only affected the above thread"
       options[:scale] ||= nil
       options[:notes] ||= nil
 
-      if options[:notes]
-        notes_in_octave = Array(options[:notes]).map {|x|
-          note(note_info(x).pitch_class.to_s + note_info(root).octave.to_s)
-        }.ring
+      # Of the various options for specifying notes
+      # we use the most specific first - notes > scale > chord
+      # default to major chord if none given
 
-        note_pool = options[:num_octaves].times.flat_map do |n|
-          notes_in_octave.map {|x| x + (n * 12) }
-        end
+      if options[:notes]
+        root_as_midi = Note.new(root).midi_note
+        potential_note_range = Range.new(root_as_midi, root_as_midi + (12 * options[:num_octaves]))
+        pitch_classes = options[:notes].map {|x| Note.resolve_note_name(x) }
+
+        note_pool = potential_note_range.select {|n|
+          pitch_classes.include? Note.resolve_note_name(n)
+        }
       elsif options[:scale]
-        note_pool = scale(root, options[:scale], num_octaves: options[:num_octaves])
+        note_pool = Scale.new(root, options[:scale], options[:num_octaves])
       else
-        note_pool = options[:num_octaves].times.flat_map do |n|
-          chord(root, options[:chord]).map {|x| x + (n * 12) }
-        end
+        # We want all chord tones in the given range,
+        # rather than just having the notes of a chord
+        # even if that means doubling some notes
+        root_as_midi = Note.new(root).midi_note
+        potential_note_range = Range.new(root_as_midi, root_as_midi + (12 * options[:num_octaves]))
+        pitch_classes = Chord.new(root, options[:chord]).map {|x| Note.resolve_note_name(x) }
+
+        # get the notes in the range which belong to the chord
+        note_pool = potential_note_range.select {|n|
+          pitch_classes.include? Note.resolve_note_name(n)
+        }
       end
 
       # safety net
@@ -402,18 +414,15 @@ play 80  #=> this plays as the stop only affected the above thread"
                   when :up
                     note_pool.sort
                   when :down
-                    # TODO make sure it starts on root
                     note_pool.sort.reverse
                   when :updown
-                    # TODO no repeats
-                    note_pool.sort + note_pool.sort.reverse[1..-1]
+                    note_pool.sort + note_pool.sort.reverse[1..-2]
                   when :downup
-                    # TODO no repeats
-                    note_pool.sort.reverse + note_pool.sort[1..-1]
+                    note_pool.sort.reverse + note_pool.sort[1..-2]
                   when :random
                     note_pool.shuffle
-                  when :from_notes
-                    note_pool
+                  # when :from_notes
+                  #   note_pool
                   end
 
       note_pool = if options[:grouping] != 0
@@ -430,12 +439,12 @@ play 80  #=> this plays as the stop only affected the above thread"
         summary:        "Make a ring of notes that form an arpeggio or pattern",
         args:           [[:root, :anything]],
         returns:        :ring,
-        opts:           {:num_octaves      => "",
-                         :direction => "",
-                         :grouping => "",
-                         :chord => "",
-                         :scale => "",
-                         :notes => ""},
+        opts:           {:num_octaves => "",
+                         :direction   => "",
+                         :grouping    => "",
+                         :chord       => "",
+                         :scale       => "",
+                         :notes       => ""},
         accepts_block:  false,
         doc:            "",
         examples:       [
