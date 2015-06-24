@@ -203,6 +203,57 @@ module SonicPi
       def ___sp_vector_name
         "ring"
       end
+
+      def up
+        self
+      end
+
+      def down
+        self.reverse
+      end
+
+      def downup
+        SonicPi::Core::RingVector.new(self.reverse + self[1..-2])
+      end
+
+      def updown
+        SonicPi::Core::RingVector.new(self + self.reverse[1..-2])
+      end
+
+      def pattern(*args)
+        # Scale patterns in music are 1 indexed
+        args = args.map {|x| x - 1 }
+
+        SonicPi::Core::RingVector.new(self.to_a.values_at(*args))
+      end
+
+      def scale_pattern(*args)
+        group_size = args.max
+
+        # Scale patterns in music are 1 indexed
+        args = args.map {|x| x - 1 }
+
+        SonicPi::Core::RingVector.new(self.to_a.each_cons(group_size).map {|g|
+          g.values_at(*args)
+        }.flatten)
+      end
+
+      def intervals(*args)
+        # Intervals in music are 1 indexed
+        interval_args = args.map{|x| x - 1 }
+
+        # Here we convert a list of intervals to a scale pattern
+        # e.g. [3,5] (a third followed by a fifth)
+        # becomes pattern [1,3,7] as the 5th is relative to the 3rd
+        pattern_args = interval_args.inject([0]) {|acc, e| Array(acc) << (acc.last + e) }
+
+        # We have it as a zero-indexed pattern
+        # Now to convert it back to a scale_pattern
+        pattern_args = pattern_args.map {|x| x + 1 }
+
+        scale_pattern(*pattern_args)
+      end
+
     end
 
     class RampVector < SPVector
