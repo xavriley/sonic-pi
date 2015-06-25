@@ -238,7 +238,12 @@ module SonicPi
         }.flatten)
       end
 
-      def intervals(*args)
+      def interval(arg)
+        # run a single interval through a ring
+        SonicPi::Core::RingVector.new(self.to_a.each_slice(arg).map &:first)
+      end
+
+      def interval_pattern(*args)
         # Intervals in music are 1 indexed
         interval_args = args.map{|x| x - 1 }
 
