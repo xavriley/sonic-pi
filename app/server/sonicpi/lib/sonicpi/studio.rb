@@ -31,6 +31,7 @@ module SonicPi
       @max_concurrent_synths = max_concurrent_synths
       @samples = {}
       @recorders = {}
+      @bs = nil
       @recording_mutex = Mutex.new
       @rand_buf_id = load_sample(buffers_path + "/rand-stream.wav")[0].to_i
       reset
@@ -166,13 +167,23 @@ module SonicPi
       @recorders[bus]
     end
 
+    def recording_prepare(path, bus=0)
+      return false if @recorders[bus]
+      @recording_mutex.synchronize do
+        return false if @recorders[bus]
+        @bs ||= @server.buffer_stream_open(path)
+        puts @bs.inspect
+        true
+      end
+    end
+
     def recording_start(path, bus=0)
       return false if @recorders[bus]
       @recording_mutex.synchronize do
         return false if @recorders[bus]
-        bs = @server.buffer_stream_open(path)
-        s = @server.trigger_synth :head, @recording_group, "sonic-pi-recorder", {"out-buf" => bs.to_i, "in_bus" => bus.to_i}, true
-        @recorders[bus] = [bs, s]
+        @bs ||= @server.buffer_stream_open(path)
+        s = @server.trigger_synth :head, @recording_group, "sonic-pi-recorder", {"out-buf" => @bs.to_i, "in_bus" => bus.to_i}, false
+        @recorders[bus] = [@bs, s]
         true
       end
     end
@@ -181,8 +192,8 @@ module SonicPi
       return false unless @recorders[bus]
       @recording_mutex.synchronize do
         return false unless @recorders[bus]
-        bs, s = @recorders[bus]
-        bs.free
+        _, s = @recorders[bus]
+        @bs.free
         s.kill
         @recorders.delete bus
         true

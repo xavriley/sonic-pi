@@ -771,6 +771,26 @@ sleep 2
 play 50 # Plays with supersaw synth
 "]
 
+      def recording_prepare
+        if @mod_sound_studio.recording?
+          __info "Already recording..."
+        else
+          __info "Preparing to record"
+          tmp_dir = Dir.mktmpdir("sonic-pi")
+          @tmp_path = File.expand_path("#{tmp_dir}/#{Random.rand(100000000)}.wav")
+          puts @tmp_path
+          @mod_sound_studio.recording_prepare @tmp_path
+        end
+      end
+      doc name:        :recording_prepare,
+        introduced:    Version.new(2,7,0),
+        summary:       "Prepare recording",
+        doc:           "Prepare recording by getting the file ready. This means there's no silence at the start of the recording.",
+        args:          [],
+        opts:          nil,
+        accepts_block: false,
+        examples:      [],
+        hide:          true
 
 
 
@@ -778,9 +798,8 @@ play 50 # Plays with supersaw synth
         if @mod_sound_studio.recording?
           __info "Already recording..."
         else
+          recording_prepare if @tmp_path.nil?
           __info "Start recording"
-          tmp_dir = Dir.mktmpdir("sonic-pi")
-          @tmp_path = File.expand_path("#{tmp_dir}/#{Random.rand(100000000)}.wav")
           @mod_sound_studio.recording_start @tmp_path
         end
       end
