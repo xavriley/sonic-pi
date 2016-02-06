@@ -313,7 +313,7 @@ module SonicPi
       rescue Exception => e
        raise "Unable to boot sound synthesis engine: the input and output rates of your audio card are not the same. Got in: #{audio_in_rate}, out: #{audio_out_rate}."
       end
-      boot_and_wait(scsynth_path, "-u", @port.to_s, "-a", num_audio_busses_for_current_os.to_s, "-m", "131072", "-D", "0", "-R", "0", "-l", "1")
+      boot_and_wait({"LADSPA_PATH" => "/Applications/LMMS.app/Contents/lib/lmms/ladspa"}, scsynth_path, "-u", @port.to_s, "-a", num_audio_busses_for_current_os.to_s, "-m", "131072", "-D", "0", "-R", "0", "-l", "1")
     end
 
 

@@ -6001,6 +6001,84 @@ Use FX `:band_eq` with a negative db for the opposite effect - to attenuate a gi
 
 
 
+    class FXTubeWarmth < FXInfo
+      def name
+        "TubeWarmth"
+      end
+
+      def introduced
+        Version.new(2,10,0)
+      end
+
+      def synth_name
+        "fx_tube-warmth"
+      end
+
+      def doc
+        "TAP TubeWarmth adds the character of vacuum tube amplification to your audio tracks by emulating the sonically desirable nonlinear characteristics of triodes. In addition, this plugin also supports emulating analog tape saturation."
+      end
+
+      def arg_defaults
+        {
+          :amp => 1,
+          :amp_slide => 0,
+          :amp_slide_shape => 1,
+          :amp_slide_curve => 0,
+          :mix => 1,
+          :mix_slide => 0,
+          :mix_slide_shape => 1,
+          :mix_slide_curve => 0,
+          :pre_amp => 1,
+          :pre_amp_slide => 0,
+          :pre_amp_slide_shape => 1,
+          :pre_amp_slide_curve => 0,
+          :drive => 0.2575,
+          :drive_slide => 0,
+          :drive_slide_shape => 1,
+          :drive_slide_curve => 0,
+          :tape_blend => 1,
+          :tape_blend_slide => 0,
+          :tape_blend_slide_shape => 1,
+          :tape_blend_slide_curve => 0,
+        }
+      end
+
+      def specific_arg_info
+        {
+          :drive =>
+          {
+            :doc => "Amount of drive to be applied (as a value between 0 and 1). Values between 0.2 and 0.5 are a good starting point for a variety of source materials. Since audio tracks can vary quite a bit in average and peak levels, experiment with this setting and use your ears to get the sound you want. (It's quite easy if you know how real tube amps sound like...) If the drive level is set too high, the signal will most likely sound distorted. If it's too low, you may not hear the effect working.",
+            :validations => [v_greater_than_oet(:drive, 0), v_less_than_oet(:drive, 1)],
+            :modulatable => true
+          },
+
+          :drive_slide =>
+          {
+            :doc => generic_slide_doc(:drive),
+            :validations => [v_positive(:drive_slide)],
+            :modulatable => true,
+            :bpm_scale => true
+          },
+
+          :tape_blend =>
+          {
+            :doc => "Blend of tape vs tube colour (as a value between -1 and 1, -1 being fully tape, 1 being fully tube). When set all the way to the right (+1 or default position), the plugin emulates the sound of triode tube distortion. The result is asymmetrical, producing mostly second harmonics and some third. When set all the way to the left (-1), the plugin emulates the sound of analog tape. The result is symmetrical and produces mostly third harmonics and some second. With high drive settings, moving the blend control to the left increases the apparent loudness of low-level signals dramatically. This is because the zero-attack, zero-release compression effect is increased under these conditions. Use the blend control to set the sound of the plugin anywhere between Tape and Tube sound.",
+            :validations => [v_greater_than_oet(:tape_blend, -1), v_less_than_oet(:tape_blend, 1)],
+            :modulatable => true
+          },
+
+          :tape_blend_slide =>
+          {
+            :doc => generic_slide_doc(:tape_blend),
+            :validations => [v_positive(:tape_blend_slide)],
+            :modulatable => true,
+            :bpm_scale => true
+          }
+        }
+      end
+    end
+
+
     class FXPan < FXInfo
       def name
         "Pan"
@@ -6452,6 +6530,7 @@ Use FX `:band_eq` with a negative db for the opposite effect - to attenuate a gi
         :fx_normaliser => FXNormaliser.new,
         :fx_replace_normaliser => FXNormaliser.new,
         :fx_distortion => FXDistortion.new,
+        :fx_tube_warmth => FXTubeWarmth.new,
         :fx_replace_distortion => FXDistortion.new,
         :fx_pan => FXPan.new,
         :fx_replace_pan => FXPan.new,
