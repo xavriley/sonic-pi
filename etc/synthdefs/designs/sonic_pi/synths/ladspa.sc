@@ -10,6 +10,5 @@ SynthDef('sonic-pi-fx_tube-warmth', {
 	result = LADSPA.ar(1, 2158, drive*10, tape_blend*10, source);
 
 	Out.ar(out_bus, result.dup);
-}).writeDefFile("/Users/xriley/Projects/sonic-pi/etc/synthdefs/compiled/");
+}).writeDefFile(PathName.new(thisProcess.nowExecutingPath).pathOnly +/+ "../../../compiled/");
 )
-// REMEMBER TO EDIT THIS TO MATCH YOUR PATH ^^^^^^^^^^^^^^^^^^^^
