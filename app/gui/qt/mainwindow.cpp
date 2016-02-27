@@ -19,9 +19,6 @@
 #include <fstream>
 
 // Qt stuff
-//ADRIAN
-#include <QPainter>
-//ADRIAN
 #include <QDate>
 #include <QDesktopServices>
 #include <QDir>
@@ -96,14 +93,6 @@ using namespace oscpkt;// OS specific stuff
 
 #include "mainwindow.h"
 
-//ADRIAN
-/*
-#include <server_shm.hpp>
-std::unique_ptr<server_shared_memory_client> shm_client;
-scope_buffer_reader shm_reader;
-*/
-//ADRIAN
-
 #ifdef Q_OS_MAC
 MainWindow::MainWindow(QApplication &app, bool i18n, QMainWindow* splash)
 #else
@@ -173,9 +162,7 @@ MainWindow::MainWindow(QApplication &app, bool i18n, QSplashScreen* splash)
   createToolBar();
   createStatusBar();
   createInfoPane();
-  //ADRIAN
   createScopePane();
-  //ADRIAN
   setWindowTitle(tr("Sonic Pi"));
   initPrefsWindow();
   updateDarkMode();
@@ -1512,7 +1499,6 @@ void MainWindow::stopCode()
   statusBar()->showMessage(tr("Stopping..."), 2000);
 }
 
-//ADRIAN
 void MainWindow::scope()
 {
   if(scopeWidget->isVisible())
@@ -1523,7 +1509,7 @@ void MainWindow::scope()
     scopeWidget->show();
   }
 }
-//ADRIAN
+
 void MainWindow::about()
 {
   // todo: this is returning true even after the window disappears
@@ -2088,8 +2074,6 @@ void MainWindow::createToolBar()
   toolBar->addAction(stopAct);
   toolBar->addAction(recAct);
 
-  toolBar->addWidget(spacer);
-
   toolBar->addAction(saveAsAct);
   toolBar->addAction(loadFileAct);
   toolBar->addAction(recAct);
@@ -2122,11 +2106,9 @@ QString MainWindow::readFile(QString name)
   return st.readAll();
 }
 
-//ADRIAN
 void MainWindow::createScopePane() {
-  scopeWidget.reset( new Scope(/*4556*/) );
+  scopeWidget.reset( new Scope() );
 }
-//ADRIAN
 
 void MainWindow::createInfoPane() {
   QTabWidget* infoTabs = new QTabWidget(this);
@@ -2375,9 +2357,6 @@ void MainWindow::onExitCleanup()
   std::cout << "[GUI] - exiting. Cheerio :-)" << std::endl;
   std::cout.rdbuf(coutbuf); // reset to stdout before exiting
 }
-
-//ADRIAN
-//ADRIAN
 
 void MainWindow::heartbeatOSC() {
 

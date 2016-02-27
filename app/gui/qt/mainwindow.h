@@ -39,10 +39,7 @@
 #include <fstream>
 #include <QSignalMapper>
 #include "sonicpitheme.h"
-
-//ADRIAN
 #include "scope.h"
-//ADRIAN
 
 class QAction;
 class QMenu;
@@ -126,9 +123,7 @@ private slots:
     bool loadFile();
     bool saveAs();
     void about();
-    //ADRIAN
     void scope();
-    //ADRIAN
     void help();
     void onExitCleanup();
     void toggleRecording();
@@ -192,9 +187,7 @@ private:
     void createToolBar();
     void createStatusBar();
     void createInfoPane();
-    //ADRIAN
     void createScopePane();
-    //ADRIAN
     void readSettings();
     void writeSettings();
     void loadFile(const QString &fileName, SonicPiScintilla* &text);
@@ -258,9 +251,7 @@ private:
     QTextBrowser *docPane;
 //  QTextBrowser *hudPane;
     QWidget *mainWidget;
-    //ADRIAN
     std::unique_ptr<Scope> scopeWidget;
-    //ADRIAN
     bool hidingDocPane;
     bool restoreDocPane;
 
