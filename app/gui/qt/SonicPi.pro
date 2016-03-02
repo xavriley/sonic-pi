@@ -21,9 +21,9 @@
 
 # -- Change to match the location of QScintilla on your system
 #
- LIBS += -L/Users/sam/Downloads/tmp/QScintilla-gpl-2.9/Qt4Qt5 -lrt -lqwt-qt5
- INCLUDEPATH += /Users/sam/Downloads/tmp/QScintilla-gpl-2.9/Qt4Qt5 /usr/include/qwt
- DEPENDPATH += /Users/sam/Downloads/tmp/QScintilla-gpl-2.9/Qt4Qt5
+LIBS += -L/Users/xavierriley/Downloads/QScintilla-gpl-2.9.2-snapshot-5215e7f3116e/Qt4Qt5
+INCLUDEPATH += /Users/xavierriley/Downloads/QScintilla-gpl-2.9.2-snapshot-5215e7f3116e/Qt4Qt5 /Users/xavierriley/Projects/qwt-6.1.2/lib /Users/xavierriley/Projects/qwt-6.1.2/lib/qwt.framework/Headers /usr/local/Cellar/boost/1.60.0_1/include /usr/local/Cellar/boost/1.60.0_1/lib -lqwt
+DEPENDPATH += /Users/xavierriley/Downloads/QScintilla-gpl-2.9.2-snapshot-5215e7f3116e/Qt4Qt5
 # --
 
 TARGET = 'sonic-pi'
@@ -37,6 +37,9 @@ QMAKE_CXXFLAGS += -std=c++11
 
 # Linux only
 unix:!macx {
+  # lib for scope shm interface
+  LIBS += -lrt
+
   lessThan(QT_MAJOR_VERSION, 5) {
     LIBS += -lqscintilla2
   } else {
@@ -47,6 +50,15 @@ unix:!macx {
 
 # Mac OS X only
 macx {
+  CONFIG += warn_off
+
+  include( /Users/xavierriley/Projects/qwt-6.1.2/qwt.prf )
+  CONFIG += qwt
+  LIBS += -L/Users/xavierriley/Projects/qwt-6.1.2/lib -framework qwt
+  QMAKE_CXXFLAGS += -stdlib=libc++
+  QMAKE_MACOSX_DEPLOYMENT_TARGET=10.10
+
+
   TARGET = 'Sonic Pi'
   LIBS += -lqscintilla2
   QT += macextras

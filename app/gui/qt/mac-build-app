@@ -14,9 +14,9 @@
 #++
 
 ## ---- Modify these to point to your system
-QSCINTILLA=/Users/sam/Downloads/tmp/QScintilla-gpl-2.9/Qt4Qt5
-QTBIN=/Users/sam/Development/Qt/5.4/clang_64/bin
-LIBQS=libqscintilla2.12.0.0.dylib
+QSCINTILLA=/Users/xavierriley/Downloads/QScintilla-gpl-2.9.2-snapshot-5215e7f3116e/Qt4Qt5
+QTBIN=/usr/local/Cellar/qt5/5.4.1/bin
+LIBQS=libqscintilla2.12.0.1.dylib
 LIBQS_LINK=libqscintilla2.12.dylib
 ## ----
 
@@ -42,6 +42,7 @@ cp -f ruby_help.tmpl ruby_help.h
 $LREL SonicPi.pro
 
 # Build app
+# make clean
 $QMAKE -o Makefile SonicPi.pro
 make
 

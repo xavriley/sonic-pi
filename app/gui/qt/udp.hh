@@ -54,6 +54,7 @@
 #include <cassert>
 #include <string>
 #include <vector>
+#include <ostream>
 
 namespace oscpkt {
 
