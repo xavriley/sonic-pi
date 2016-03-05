@@ -870,6 +870,12 @@ puts (ring 1, 2, 3).pick #=> (ring 3, 3, 2)"
           auto_cue = true
         end
 
+        if args_h.has_key? :density
+          density_val = args_h[:density]
+        else
+          density_val = 1
+        end
+
         case block.arity
         when 0
           define(ll_name) do |a|
@@ -884,21 +890,23 @@ puts (ring 1, 2, 3).pick #=> (ring 3, 3, 2)"
         end
 
         in_thread(name: ll_name, delay: delay, sync: sync_sym) do
-          Thread.current.thread_variable_set :sonic_pi__not_inherited__live_loop_auto_cue, auto_cue
-          if args_h.has_key?(:init)
-            res = args_h[:init]
-          else
-            res = 0
-          end
-          use_random_seed args_h[:seed] if args_h[:seed]
-          loop do
-            slept = block_slept? do
-              Thread.current.thread_variable_set(:sonic_pi_spider_synced, false)
-              cue name if Thread.current.thread_variable_get :sonic_pi__not_inherited__live_loop_auto_cue
-              res = send(ll_name, res)
+          density(density_val) do
+            Thread.current.thread_variable_set :sonic_pi__not_inherited__live_loop_auto_cue, auto_cue
+            if args_h.has_key?(:init)
+              res = args_h[:init]
+            else
+              res = 0
             end
+            use_random_seed args_h[:seed] if args_h[:seed]
+            loop do
+              slept = block_slept? do
+                Thread.current.thread_variable_set(:sonic_pi_spider_synced, false)
+                cue name if Thread.current.thread_variable_get :sonic_pi__not_inherited__live_loop_auto_cue
+                res = send(ll_name, res)
+              end
 
-            raise "Live loop #{name.to_sym.inspect} did not sleep!" unless slept or Thread.current.thread_variable_get(:sonic_pi_spider_synced)
+              raise "Live loop #{name.to_sym.inspect} did not sleep!" unless slept or Thread.current.thread_variable_get(:sonic_pi_spider_synced)
+            end
           end
         end
 
