@@ -161,6 +161,11 @@ module SonicPi
       internal_load_sample(path, server)
     end
 
+    def blank_sample(path, size, server=@server)
+      check_for_server_rebooting!(:blank_sample)
+      internal_blank_sample(path, size, server)
+    end
+
     def free_sample(paths, server=@server)
       check_for_server_rebooting!(:free_sample)
       @sample_sem.synchronize do
@@ -397,6 +402,21 @@ module SonicPi
         return @samples[path] if @samples[path]
         raise "No sample exists with path:\n  #{unify_tilde_dir(path).inspect}" unless File.exists?(path) && !File.directory?(path)
         buf_info = server.buffer_alloc_read(path)
+        sample_info = SampleBuffer.new(buf_info, path)
+        @samples[path] = sample_info
+      end
+
+      [sample_info, false]
+    end
+
+    def internal_blank_sample(path, size, server=@server)
+      return [@samples[path], true] if @samples[path]
+      #message "Loading full sample path: #{path}"
+      sample_info = nil
+      @sample_sem.synchronize do
+        return @samples[path] if @samples[path]
+
+        buf_info = server.buffer_alloc(size)
         sample_info = SampleBuffer.new(buf_info, path)
         @samples[path] = sample_info
       end

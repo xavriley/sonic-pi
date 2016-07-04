@@ -92,7 +92,6 @@ module SonicPi
       return candidates
     end
 
-
     def extract_candidates(candidates)
       return [] if candidates.empty?
       cached_all_candidates = @cached_extracted_candidates[candidates]

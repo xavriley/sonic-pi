@@ -2854,6 +2854,42 @@ sample_paths \"/path/to/samples/\", \"foo\" #=> ring of all samples in /path/to/
 
 
 
+      def rec_sample(path, *args)
+        #
+        # Nearly there - need to change sample resolution to make sure
+        # sample method can find it in the cache
+        #
+        #
+        # check for existing sample
+        #
+        # get length
+        # get source
+        #
+        # allocate buffer of length
+        # add to sample library
+        #
+        # trigger record - leave this bit till last - playing an empty sample will do
+        args_h = resolve_synth_opts_hash_or_array(args)
+
+        dur = args_h.delete(:length)
+        if dur == nil
+          __delayed_message "rec_sample requires a :length in beats"
+          return @blank_node
+        end
+
+        no_of_samples = (dur / (current_bpm / 60.0)) * 44100.0
+        info, cached = @mod_sound_studio.blank_sample(path, no_of_samples)
+
+        # if @mod_sound_studio.sample_loaded?(path)
+        #   return trigger_sampler path, args_h
+        # else
+        #   res = Promise.new
+        #   in_thread { res.deliver!(trigger_sampler path, args_h)}
+        #   return LazyNode.new(res)
+        # end
+        return info
+      end
+
       def sample(*args)
         filts_and_sources, args_a = sample_split_filts_and_opts(args)
         args_h = merge_synth_arg_maps_array(args_a)
